@@ -137,7 +137,7 @@ defaultRules:
   ## Additional annotations for specific PrometheusRule alerts groups
   additionalRuleGroupAnnotations:
     alertmanager: {}
-    etcd: {}
+    etcd: {} 
     configReloaders: {}
     general: {}
     k8sContainerCpuUsageSecondsTotal: {}
