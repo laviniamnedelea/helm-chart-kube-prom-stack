@@ -181,12 +181,28 @@ defaultRules:
 
 ## Deprecated way to provide custom recording or alerting rules to be deployed into the cluster.
 ##
-additionalPrometheusRules: 
-  - name: custom-alerts
-    groups:
-      - name: GitOps-project
+# additionalPrometheusRules: []
+#  - name: my-rule-file
+#    groups:
+#      - name: my_group
+#        rules:
+#        - record: my_record
+#          expr: 100 * my_record
+
+## Provide custom recording or alerting rules to be deployed into the cluster.
+##
+additionalPrometheusRulesMap: 
+#  rule-name:
+#    groups:
+#    - name: my_group
+#      rules:
+#      - record: my_record
+#        expr: 100 * my_record
+  - rule-name: gitops
+    groups: 
+      - name: gitops-group
         rules:
-        # Alert for memory consumption per pod (all memory - cache, swap etc) which increased with more than 50% in the last 5m compared to the last 1h.
+      # Alert for memory consumption per pod (all memory - cache, swap etc) which increased with more than 50% in the last 5m compared to the last 1h.
         - alert: High Pod Memory >50%
           expr: (avg_over_time(container_memory_usage_bytes{namespace!="kube-system"}[5m]) / avg_over_time(container_memory_usage_bytes{namespace!="kube-system"}[1h])) * 100 - 100 > 50
           for: 1m
@@ -263,23 +279,6 @@ additionalPrometheusRules:
             description: |
               The total memory to working set memory ratio is high for pod {{$labels.pod}}.
               This may indicate an inefficient memory utilization.
-        
-#  - name: my-rule-file
-#    groups:
-#      - name: my_group
-#        rules:
-#        - record: my_record
-#          expr: 100 * my_record
-
-## Provide custom recording or alerting rules to be deployed into the cluster.
-##
-additionalPrometheusRulesMap: {}
-#  rule-name:
-#    groups:
-#    - name: my_group
-#      rules:
-#      - record: my_record
-#        expr: 100 * my_record
 
 ##
 global:
