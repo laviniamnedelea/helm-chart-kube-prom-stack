@@ -198,86 +198,72 @@ additionalPrometheusRulesMap:
 #      rules:
 #      - record: my_record
 #        expr: 100 * my_record
-  - groups: 
-      - name: gitops-group
-        rules:
-      # Alert for memory consumption per pod (all memory - cache, swap etc) which increased with more than 50% in the last 5m compared to the last 1h.
-          - alert: High Pod Memory >50%
-            expr: (avg_over_time(container_memory_usage_bytes{namespace!="kube-system"}[5m]) / avg_over_time(container_memory_usage_bytes{namespace!="kube-system"}[1h])) * 100 - 100 > 50
-            for: 1m
-            labels:
-              severity: warning
-              # namespace: monitoring-stack
-            annotations:
-              summary: High Memory Usage in pod {{$labels.pod}}
-              description: |
-                The pod {{$labels.pod}} on host {{$labels.kubernetes_io_hostname}} is experiencing high memory usage - increased > 50% in the last 10m.
-
-          # Alert for memory consumption per pod (all memory - cache, swap etc) which increased with more 
-          # than 80% in the last 5m compared to the last 1h.
-          - alert: High Pod Memory > 80%
-            expr: |
-              (avg_over_time(container_memory_usage_bytes{namespace!="kube-system"}[5m]) / avg_over_time(container_memory_usage_bytes{namespace!="kube-system"}[1h])) * 100 - 100 > 80
-            for: 1m
-            labels:
-              severity: critical
-              # namespace: monitoring-stack
-            annotations:
-              summary: High Memory Usage in pod {{$labels.pod}}
-              description: |
-                The pod {{$labels.pod}} on host {{$labels.kubernetes_io_hostname}} is experiencing high memory usage - increased > 50% in the last 10m.
-      
-          - alert: InstanceDown
-            expr: up{namespace!="kube-system", container != "alertmanager"} == 0
-            for: 5m
-            labels:
-              severity: critical
-              # namespace: monitoring-stack
-            annotations:
-              summary: "Instance {{ $labels.instance }} down"
-              description: "{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 5  minutes."
-
-          - alert: HighFlaskCpuUsage
-            expr: |
-              sum by (pod, kubernetes_io_hostname) (rate(container_cpu_usage_seconds_total{pod=~"flaskdemo.*"}[1m])) > 0.8
-            for: 5m
-            labels:
-              severity: critical
-              # namespace: monitoring-stack
-            annotations:
-              summary: "High Flask CPU Usage"
-              description: "The Flask backend container in pod {{$labels.pod}} on host 
-                {{$labels.kubernetes_io_hostname}}
-                is experiencing high CPU usage."
-
-          # Alert for consumption of CPU (how much time per second the CPU took to execute an operation on that pod) 
-          # per pod which increased with more than 50% in the last 5m compared to the last 1h.
-          - alert: IncreasedFlaskCpuUsage >50%
-            expr: |
-              (sum by (pod, kubernetes_io_hostname) (rate(container_cpu_usage_seconds_total{pod=~"flaskdemo.*"}[5m])) / sum by (pod, kubernetes_io_hostname) (rate(container_cpu_usage_seconds_total{pod=~"flaskdemo.*"}[1h])) * 100 - 100 ) > 50
-            for: 5m
-            labels:
-              severity: warning
-              # namespace: monitoring-stack
-            annotations:
-              summary: "Increased Flask CPU Usage"
-              description: "The Flask backend container in pod {{$labels.pod}} on host 
-                {{$labels.kubernetes_io_hostname}}
-                is experiencing a higher CPU usage."
-
-          - alert: HighMemoryUsageToWorkingSetRatio-FlaskPods
-            expr: |
-              (avg_over_time(container_memory_usage_bytes{pod=~"flaskdemo.*"}[5m]) /
-              avg_over_time(container_memory_working_set_bytes{pod=~"flaskdemo.*"}[5m])) > 1.5
-            for: 5m
-            labels:
-              severity: warning
-              # namespace: monitoring-stack
-            annotations:
-              summary: "High Memory Working Set Ratio in Pods"
-              description: |
-                The total memory to working set memory ratio is high for pod {{$labels.pod}}.
-                This may indicate an inefficient memory utilization.
+spec: 
+  groups:
+    - name: GitOps-project
+      rules:
+      - alert: High Pod Memory >50%
+        annotations:
+          description: |
+            The pod {{$labels.pod}} on host {{$labels.kubernetes_io_hostname}} is experiencing high memory usage - increased > 50% in the last 10m.
+          summary: High Memory Usage in pod {{$labels.pod}}
+        expr: (avg_over_time(container_memory_usage_bytes{namespace!="kube-system"}[5m])
+          / avg_over_time(container_memory_usage_bytes{namespace!="kube-system"}[1h]))
+          * 100 - 100 > 50
+        for: 1m
+        labels:
+          severity: warning
+      - alert: High Pod Memory > 80%
+        annotations:
+          description: |
+            The pod {{$labels.pod}} on host {{$labels.kubernetes_io_hostname}} is experiencing high memory usage - increased > 50% in the last 10m.
+          summary: High Memory Usage in pod {{$labels.pod}}
+        expr: |
+          (avg_over_time(container_memory_usage_bytes{namespace!="kube-system"}[5m]) / avg_over_time(container_memory_usage_bytes{namespace!="kube-system"}[1h])) * 100 - 100 > 80
+        for: 1m
+        labels:
+          severity: critical
+      - alert: InstanceDown
+        annotations:
+          description: '{{ $labels.instance }} of job {{ $labels.job }} has been down
+            for more than 5  minutes.'
+          summary: Instance {{ $labels.instance }} down
+        expr: up{namespace!="kube-system", container != "alertmanager"} == 0
+        for: 5m
+        labels:
+          severity: critical
+      - alert: HighFlaskCpuUsage
+        annotations:
+          description: The Flask backend container in pod {{$labels.pod}} on host {{$labels.kubernetes_io_hostname}}
+            is experiencing high CPU usage.
+          summary: High Flask CPU Usage
+        expr: |
+          sum by (pod, kubernetes_io_hostname) (rate(container_cpu_usage_seconds_total{pod=~"flaskdemo.*"}[1m])) > 0.8
+        for: 5m
+        labels:
+          severity: critical
+      - alert: IncreasedFlaskCpuUsage >50%
+        annotations:
+          description: The Flask backend container in pod {{$labels.pod}} on host {{$labels.kubernetes_io_hostname}}
+            is experiencing a higher CPU usage.
+          summary: Increased Flask CPU Usage
+        expr: |
+          (sum by (pod, kubernetes_io_hostname) (rate(container_cpu_usage_seconds_total{pod=~"flaskdemo.*"}[5m])) / sum by (pod, kubernetes_io_hostname) (rate(container_cpu_usage_seconds_total{pod=~"flaskdemo.*"}[1h])) * 100 - 100 ) > 50
+        for: 5m
+        labels:
+          severity: warning
+      - alert: HighMemoryUsageToWorkingSetRatio-FlaskPods
+        annotations:
+          description: |
+            The total memory to working set memory ratio is high for pod {{$labels.pod}}.
+            This may indicate an inefficient memory utilization.
+          summary: High Memory Working Set Ratio in Pods
+        expr: |
+          (avg_over_time(container_memory_usage_bytes{pod=~"flaskdemo.*"}[5m]) /
+          avg_over_time(container_memory_working_set_bytes{pod=~"flaskdemo.*"}[5m])) > 1.5
+        for: 5m
+        labels:
+          severity: warning
 
 ##
 global:
