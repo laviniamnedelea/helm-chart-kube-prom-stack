@@ -198,7 +198,7 @@ additionalPrometheusRulesMap:
 #      rules:
 #      - record: my_record
 #        expr: 100 * my_record
-  - rule-name: 
+    rule-name: 
       groups: 
         - name: gitops-group
           rules:
