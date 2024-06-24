@@ -198,12 +198,11 @@ additionalPrometheusRulesMap:
 #      rules:
 #      - record: my_record
 #        expr: 100 * my_record
-    rule-name: 
-      groups: 
-        - name: gitops-group
-          rules:
-        # Alert for memory consumption per pod (all memory - cache, swap etc) which increased with more than 50% in the last 5m compared to the last 1h.
-          - record: High Pod Memory >50%
+  - groups: 
+      - name: gitops-group
+        rules:
+      # Alert for memory consumption per pod (all memory - cache, swap etc) which increased with more than 50% in the last 5m compared to the last 1h.
+          - alert: High Pod Memory >50%
             expr: (avg_over_time(container_memory_usage_bytes{namespace!="kube-system"}[5m]) / avg_over_time(container_memory_usage_bytes{namespace!="kube-system"}[1h])) * 100 - 100 > 50
             for: 1m
             labels:
